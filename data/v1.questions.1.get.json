@@ -1,0 +1,19 @@
+{
+  "session_id": "16546%asDad324rf",
+  "questions": [
+    {
+      "question": "Return the values from a single column in the input array",
+      "answers": ["array_chunk", "array_change_key_case", "array_column", "array_combine"],
+      "status": 1
+    },
+    {
+      "question": "Changes the case of all keys in an array",
+      "answers": ["array_chunk", "array_change_key_case", "array_column", "array_combine"],
+      "status": null
+    },
+    {
+      "question": "Creates an array by using one array for keys and another for its values",
+      "answers": ["array_chunk", "array_change_key_case", "array_column", "array_combine"],
+      "status": null
+    }
+  ]}
