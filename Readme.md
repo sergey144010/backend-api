@@ -27,11 +27,11 @@ and create files like see below
 
 Create files in your ./data directory, like this
 ```bash
-touch customers.get.json
+touch customers.get.200.json
 ```
-And copy to customers.get.json file valid json data, like
+And copy to customers.get.200.json file valid json data, like
 ```bash
-echo '{"name":"mkyong.com","messages":["msg 1","msg 2","msg 3"],"age":100}' >> customers.get.json
+echo '{"name":"mkyong.com","messages":["msg 1","msg 2","msg 3"],"age":100}' >> customers.get.200.json
 ```
 
 That's all. Your data access on route http://localhost:8765/customers
@@ -40,13 +40,14 @@ That's all. Your data access on route http://localhost:8765/customers
 
 Examples map files to route:
 
-- customers.get.json - GET /customers
-- customers.post.json - POST /customers
-- customers.put.json - PUT /customers
-- customers.patch.json - PATCH /customers
-- customers.delete.json - DELETE /customers
+- customers.get.200.json - GET /customers
+- customers.post.200.json - POST /customers
+- customers.put.200.json - PUT /customers
+- customers.patch.200.json - PATCH /customers
+- customers.delete.200.json - DELETE /customers
 
+where 200 - response status code
 
-- v1.customers.1.get.json - GET /v1/customers/1
+- v1.customers.1.get.200.json - GET /v1/customers/1
  
 and etc.

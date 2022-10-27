@@ -26,22 +26,24 @@ class Application
             $absFilePath = $dataDirectory . $file;
 
             $fileNameParsed = $this->fileNameParsed($absFilePath);
-            $currentMethod = $this->currentMethod($fileNameParsed);
-            $this->removeMethod($fileNameParsed);
 
-            $currentRoute = $this->currentRoute($fileNameParsed);
+            $status = $this->getStatus($fileNameParsed);
+            $method = $this->getMethod($fileNameParsed);
+            $this->removeStatusAndMethod($fileNameParsed);
+            $route = $this->getRoute($fileNameParsed);
 
             $map->route(
-                $currentRoute,
-                $currentRoute,
-                function () use ($absFilePath) {
+                $route,
+                $route,
+                function () use ($absFilePath, $status) {
                     $response = new Response();
                     $response = $response->withHeader('Content-Type', 'application/json');
                     $response = $response->withHeader('Access-Control-Allow-Origin', '*');
+                    $response = $response->withStatus($status);
                     $response->getBody()->write(file_get_contents($absFilePath));
                     return $response;
                 }
-            )->allows(mb_strtoupper($currentMethod));
+            )->allows(mb_strtoupper($method));
         }
 
         $matcher = $routerContainer->getMatcher();
@@ -72,7 +74,7 @@ class Application
      * @param Array<int, string> $fileNameParsed
      * @return string
      */
-    private function currentRoute(array $fileNameParsed): string
+    private function getRoute(array $fileNameParsed): string
     {
         $currentRoute = DIRECTORY_SEPARATOR;
         foreach ($fileNameParsed as $key => $part) {
@@ -99,14 +101,29 @@ class Application
      * @param Array<int, string> $fileNameParsed
      * @return string
      */
-    private function currentMethod(array $fileNameParsed): string
+    private function getStatus(array $fileNameParsed): string
     {
         return $fileNameParsed[count($fileNameParsed)-1];
     }
 
-    private function removeMethod(&$fileNameParsed): void
+    /**
+     * @param Array<int, string> $fileNameParsed
+     * @return string
+     */
+    private function getMethod(array $fileNameParsed): string
+    {
+        return $fileNameParsed[count($fileNameParsed)-2];
+    }
+
+    private function removeLast(&$fileNameParsed): void
     {
         unset($fileNameParsed[count($fileNameParsed)-1]);
+    }
+
+    private function removeStatusAndMethod(&$fileNameParsed): void
+    {
+        $this->removeLast($fileNameParsed);
+        $this->removeLast($fileNameParsed);
     }
 
     /**
