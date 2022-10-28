@@ -4,6 +4,7 @@ namespace App;
 
 use Aura\Router\RouterContainer;
 use http\Exception\RuntimeException;
+use Psr\Http\Message\ServerRequestInterface;
 use Zend\Diactoros\ServerRequestFactory;
 use Zend\Diactoros\Response;
 
@@ -35,12 +36,19 @@ class Application
             $map->route(
                 $route,
                 $route,
-                function () use ($absFilePath, $status) {
+                function (ServerRequestInterface $request) use ($absFilePath, $status) {
+                    $contentService = (new ContentFactory($absFilePath, $request));
+                    $content = json_encode($contentService->getBody());
+                    try {
+                        $statusCode = $contentService->getStatusCode();
+                    } catch (\Throwable) {
+                        $statusCode = $status;
+                    }
                     $response = new Response();
                     $response = $response->withHeader('Content-Type', 'application/json');
                     $response = $response->withHeader('Access-Control-Allow-Origin', '*');
-                    $response = $response->withStatus($status);
-                    $response->getBody()->write(file_get_contents($absFilePath));
+                    $response = $response->withStatus($statusCode);
+                    $response->getBody()->write($content);
                     return $response;
                 }
             )->allows(mb_strtoupper($method));
