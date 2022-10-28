@@ -54,7 +54,7 @@ and etc.
 
 ## Advanced usage
 
-For advanced usage need use advanced image like this
+For advanced usage need use `itlab77/backend-api-advanced` advanced image like this
 ```bash
 sudo docker run -d --name=simple-backend-api --rm -v "$PWD":/data -p 8765:80 itlab77/backend-api-advanced
 ```
