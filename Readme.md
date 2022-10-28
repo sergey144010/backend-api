@@ -100,7 +100,7 @@ Create file customers.get.200.json with data
 Route
 http://localhost:8765/customers?email=123@123.com&password=123
 take data
-```
+```json
 {"name":"mkyong.com","messages":["msg 1","msg 2","msg 3"],"age":100}
 ```
 with status code 200
@@ -108,7 +108,7 @@ with status code 200
 Route
 http://localhost:8765/customers?email=111@123.com
 take data
-```
+```json
 {"status": "Not found"}
 ```
 with status code 404
