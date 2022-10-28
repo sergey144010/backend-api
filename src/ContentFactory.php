@@ -69,7 +69,6 @@ class ContentFactory
         }
         if ($this->request->getMethod() === 'POST') {
             $queryParams = $this->request->getParsedBody();
-            #var_dump($this->request->getHeader('Content-Type'));
             if (in_array('application/json', $this->request->getHeader('Content-Type'))) {
                 $queryParams = json_decode($this->request->getBody()->getContents(), true);
             }
