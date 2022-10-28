@@ -47,6 +47,9 @@ class Application
                     $response = new Response();
                     $response = $response->withHeader('Content-Type', 'application/json');
                     $response = $response->withHeader('Access-Control-Allow-Origin', '*');
+                    $response = $response->withHeader(
+                        'Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS'
+                    );
                     $response = $response->withStatus($statusCode);
                     $response->getBody()->write($content);
                     return $response;
