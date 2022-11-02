@@ -3,6 +3,9 @@
 namespace App;
 
 use Psr\Http\Message\ServerRequestInterface;
+use RuntimeException;
+use stdClass;
+use Throwable;
 
 class ContentFactory
 {
@@ -17,24 +20,24 @@ class ContentFactory
     {
         $content = file_get_contents($this->absFilePath);
         if (! $content) {
-            throw new \RuntimeException();
+            throw new RuntimeException();
         }
 
         return $content;
     }
 
-    private function fromJson(string $content): \stdClass
+    private function fromJson(string $content): stdClass
     {
-        /** @var \stdClass $decode */
+        /** @var stdClass $decode */
         $decode = json_decode(json: $content, flags: JSON_THROW_ON_ERROR);
 
         return $decode;
     }
 
-    private function validate(\stdClass $content, string $property, string $type = null): void
+    private function validate(stdClass $content, string $property, string $type = null): void
     {
         if (! property_exists($content, $property)) {
-            throw new \RuntimeException('Property ' . $property . ' not found');
+            throw new RuntimeException('Property ' . $property . ' not found');
         }
 
         if (! isset($type)) {
@@ -43,23 +46,23 @@ class ContentFactory
 
         if ($type === 'array') {
             if (! is_array($content->$property)) {
-                throw new \RuntimeException('Property ' . $property . ' is not array');
+                throw new RuntimeException('Property ' . $property . ' is not array');
             }
         }
 
         if ($type === 'string') {
             if (! is_string($content->$property)) {
-                throw new \RuntimeException('Property ' . $property . ' is not string');
+                throw new RuntimeException('Property ' . $property . ' is not string');
             }
         }
     }
 
-    public function getBody(): \stdClass
+    public function getBody(): stdClass
     {
         $content = $this->fromJson($this->getContent());
         try {
             $this->validate($content, 'requests', 'array');
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return $content;
         }
 
@@ -81,13 +84,13 @@ class ContentFactory
                     $this->validate($param, 'name', 'string');
                     $this->validate($param, 'value');
                     if (! array_key_exists($param->name, $queryParams)) {
-                        throw new \RuntimeException('Params not found to query');
+                        throw new RuntimeException('Params not found to query');
                     }
                     if ($queryParams[$param->name] != $param->value) {
-                        throw new \RuntimeException('Param ' . $param->name . ' not equals schema');
+                        throw new RuntimeException('Param ' . $param->name . ' not equals schema');
                     }
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->validateErrors[] = $e->getMessage();
                 continue; }
             try {
@@ -98,7 +101,7 @@ class ContentFactory
                 $this->statusCode = ! empty ($item->response->statusCode) ? (int) $item->response->statusCode : null;
 
                 return $item->response->data;
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->validateErrors[] = $e->getMessage();
             }
         }
@@ -107,22 +110,22 @@ class ContentFactory
             $this->validate($content, 'defaultResponse');
 
             return $content->defaultResponse;
-        } catch (\Throwable){}
+        } catch (Throwable){}
 
         if (! empty($this->validateErrors)) {
-            $response = new \stdClass();
+            $response = new stdClass();
             $response->validateErrors = $this->validateErrors;
 
             return $response;
         }
 
-        return new \stdClass();
+        return new stdClass();
     }
 
     public function getStatusCode(): int
     {
         if (! isset($this->statusCode)) {
-            throw new \RuntimeException('Status code not set up');
+            throw new RuntimeException('Status code not set up');
         }
 
         return $this->statusCode;

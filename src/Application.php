@@ -5,8 +5,11 @@ namespace App;
 use Aura\Router\RouterContainer;
 use http\Exception\RuntimeException;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamInterface;
+use Throwable;
 use Zend\Diactoros\ServerRequestFactory;
 use Zend\Diactoros\Response;
+use Psr\Http\Message\ResponseInterface;
 
 class Application
 {
@@ -17,6 +20,12 @@ class Application
             $_GET,
             $_POST,
         );
+
+        if ($request->getMethod() === 'OPTIONS') {
+            echo $this->render($this->responseWithCors());
+
+            return;
+        }
 
         $routerContainer = new RouterContainer();
         $map = $routerContainer->getMap();
@@ -34,22 +43,18 @@ class Application
             $route = $this->getRoute($fileNameParsed);
 
             $map->route(
-                $route,
+                $method . '-' . $route,
                 $route,
                 function (ServerRequestInterface $request) use ($absFilePath, $status) {
                     $contentService = (new ContentFactory($absFilePath, $request));
-                    $content = json_encode($contentService->getBody());
+                    $content = json_encode($contentService->getBody(), JSON_THROW_ON_ERROR);
                     try {
                         $statusCode = $contentService->getStatusCode();
-                    } catch (\Throwable) {
+                    } catch (Throwable) {
                         $statusCode = $status;
                     }
-                    $response = new Response();
+                    $response = $this->responseWithCors();
                     $response = $response->withHeader('Content-Type', 'application/json');
-                    $response = $response->withHeader('Access-Control-Allow-Origin', '*');
-                    $response = $response->withHeader(
-                        'Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS'
-                    );
                     $response = $response->withStatus($statusCode);
                     $response->getBody()->write($content);
                     return $response;
@@ -61,8 +66,12 @@ class Application
 
         $route = $matcher->match($request);
         if (! $route) {
-            echo "No route found for the request." . PHP_EOL;
-            exit;
+            $response = $this->responseWithCors();
+            $response->getBody()->write('No route found for the request');
+
+            echo $this->render($response);
+
+            return;
         }
 
         foreach ($route->attributes as $key => $val) {
@@ -72,13 +81,7 @@ class Application
         $callable = $route->handler;
         $response = $callable($request);
 
-        foreach ($response->getHeaders() as $name => $values) {
-            foreach ($values as $value) {
-                header(sprintf('%s: %s', $name, $value), false);
-            }
-        }
-        http_response_code($response->getStatusCode());
-        echo $response->getBody();
+        echo $this->render($response);
     }
 
     /**
@@ -89,7 +92,7 @@ class Application
     {
         $currentRoute = DIRECTORY_SEPARATOR;
         foreach ($fileNameParsed as $key => $part) {
-            if ($key == count($fileNameParsed)-1) {
+            if ($key === count($fileNameParsed)-1) {
                 $currentRoute .= $part;
                 break;
             }
@@ -149,5 +152,29 @@ class Application
         }
 
         return $files;
+    }
+
+    private function render(ResponseInterface $response): StreamInterface
+    {
+        foreach ($response->getHeaders() as $name => $values) {
+            foreach ($values as $value) {
+                header(sprintf('%s: %s', $name, $value), false);
+            }
+        }
+        http_response_code($response->getStatusCode());
+
+        return $response->getBody();
+    }
+
+    private function responseWithCors(): Response
+    {
+        return new Response(
+            status: 200,
+            headers: [
+                        'Access-Control-Allow-Origin' => '*',
+                        'Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With',
+                        'Access-Control-Allow-Methods' => 'POST, GET, OPTIONS, PUT, DELETE, PATCH',
+                    ]
+        );
     }
 }
