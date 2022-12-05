@@ -35,8 +35,8 @@ class Application
             if ($file === '.' || $file === '..') { continue; }
             $absFilePath = $dataDirectory . $file;
             if (is_dir($absFilePath)) { continue; }
-
             $fileNameParsed = $this->fileNameParsed($absFilePath);
+            if ($this->getLastPart($fileNameParsed) !== 'json') { continue; }
 
             $status = $this->getStatus($fileNameParsed);
             $method = $this->getMethod($fileNameParsed);
@@ -110,6 +110,15 @@ class Application
     private function fileNameParsed(string $absFilePath): array
     {
         return explode('.', pathinfo($absFilePath)["filename"]);
+    }
+
+    /**
+     * @param Array<int, string> $fileNameParsed
+     * @return string
+     */
+    private function getLastPart(array $fileNameParsed): string
+    {
+        return $fileNameParsed[count($fileNameParsed)-1];
     }
 
     /**
