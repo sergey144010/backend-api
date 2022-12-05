@@ -92,7 +92,7 @@ class ContentFactory
                     $this->validate($param, 'name', 'string');
                     $this->validate($param, 'value');
                     if (! array_key_exists($param->name, $queryParams)) {
-                        throw new RuntimeException('Params not found to query');
+                        throw new RuntimeException('Params not found to query. Check header -> Content-Type: application/json');
                     }
                     if ($queryParams[$param->name] != $param->value) {
                         throw new RuntimeException('Param ' . $param->name . ' not equals schema');
