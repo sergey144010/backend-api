@@ -35,8 +35,9 @@ class Application
             if ($file === '.' || $file === '..') { continue; }
             $absFilePath = $dataDirectory . $file;
             if (is_dir($absFilePath)) { continue; }
-            $fileNameParsed = $this->fileNameParsed($absFilePath);
-            if ($this->getLastPart($fileNameParsed) !== 'json') { continue; }
+            $pathInfo = $this->pathInfo($absFilePath);
+            $fileNameParsed = $this->fileNameParsed($pathInfo);
+            if ($this->getExtension($pathInfo) !== 'json') { continue; }
 
             $status = $this->getStatus($fileNameParsed);
             $method = $this->getMethod($fileNameParsed);
@@ -103,22 +104,30 @@ class Application
         return $currentRoute;
     }
 
-    /**
-     * @param string $absFilePath
-     * @return Array<int, string>
-     */
-    private function fileNameParsed(string $absFilePath): array
+    private function pathInfo(string $absFilePath): array
     {
-        return explode('.', pathinfo($absFilePath)["filename"]);
+        /** @var Array<string, string> $pathInfo */
+        $pathInfo = pathinfo($absFilePath);
+
+        return $pathInfo;
     }
 
     /**
-     * @param Array<int, string> $fileNameParsed
+     * @param Array<string, string> $pathInfo
+     * @return Array<int, string>
+     */
+    private function fileNameParsed(array $pathInfo): array
+    {
+        return explode('.', $pathInfo["filename"]);
+    }
+
+    /**
+     * @param Array<string, string> $pathInfo
      * @return string
      */
-    private function getLastPart(array $fileNameParsed): string
+    private function getExtension(array $pathInfo): string
     {
-        return $fileNameParsed[count($fileNameParsed)-1];
+        return $pathInfo["extension"] ?? '';
     }
 
     /**
