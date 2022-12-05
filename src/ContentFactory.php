@@ -26,9 +26,9 @@ class ContentFactory
         return $content;
     }
 
-    private function fromJson(string $content): stdClass
+    private function fromJson(string $content): stdClass | array
     {
-        /** @var stdClass $decode */
+        /** @var stdClass|array $decode */
         $decode = json_decode(json: $content, flags: JSON_THROW_ON_ERROR);
 
         return $decode;
@@ -57,9 +57,17 @@ class ContentFactory
         }
     }
 
-    public function getBody(): stdClass
+    public function getBody(): stdClass | array
     {
-        $content = $this->fromJson($this->getContent());
+        try {
+            $content = $this->fromJson($this->getContent());
+        } catch (Throwable) {
+            $response = new stdClass();
+            $response->syntaxJsonError = 'Syntax json error';
+
+            return $response;
+        }
+
         try {
             $this->validate($content, 'requests', 'array');
         } catch (Throwable) {
@@ -92,7 +100,8 @@ class ContentFactory
                 }
             } catch (Throwable $e) {
                 $this->validateErrors[] = $e->getMessage();
-                continue; }
+                continue;
+            }
             try {
                 $this->validate($item, 'response');
                 $this->validate($item->response, 'statusCode');

@@ -34,6 +34,7 @@ class Application
         foreach ($this->files($dataDirectory) as $file) {
             if ($file === '.' || $file === '..') { continue; }
             $absFilePath = $dataDirectory . $file;
+            if (is_dir($absFilePath)) { continue; }
 
             $fileNameParsed = $this->fileNameParsed($absFilePath);
 
